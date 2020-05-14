@@ -11,7 +11,7 @@ const config = {
   storageBucket: 'e-commerce-e04a9.appspot.com',
   messagingSenderId: '46305094530',
   appId: '1:46305094530:web:bdda32ddc2ba3debb43d9b',
-  measurementId: 'G-0EMMFN9KTY'
+  measurementId: 'G-0EMMFN9KTY',
 };
 
 export const createUserProfileDocument = async (userAuth, additionalData) => {
@@ -29,7 +29,7 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
         displayName,
         email,
         createdAt,
-        ...additionalData
+        ...additionalData,
       });
     } catch (err) {
       alert(err.message);
@@ -38,7 +38,36 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
 
   return userRef;
 };
+export const addCollectionAndDocuments = async (
+  collectionKey,
+  objectsToAdd
+) => {
+  const collectionRef = firestore.collection(collectionKey);
+  const batch = firestore.batch();
 
+  objectsToAdd.forEach((obj) => {
+    const newCollectionRef = collectionRef.doc();
+    batch.set(newCollectionRef, obj);
+  });
+
+  return await batch.commit();
+};
+
+export const convertCollectionsToMap = (collections) => {
+  const tranformatedCollection = collections.docs.map((doc) => {
+    const { title, items } = doc.data();
+    return {
+      routeName: encodeURI(title.toLowerCase()),
+      id: doc.id,
+      items,
+      title,
+    };
+  });
+  return tranformatedCollection.reduce((accumulated, collection) => {
+    accumulated[collection.title.toLowerCase()] = collection;
+    return accumulated;
+  }, {});
+};
 firebase.initializeApp(config);
 
 export const auth = firebase.auth();
